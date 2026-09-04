@@ -1,0 +1,43 @@
+@media print {
+  .EntityDetailsView,
+  .EntityDetailsView * {
+    visibility: visible !important;
+  }
+
+  .EntityDetailsView {
+    background: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    transform: none !important;
+  }
+
+  .EntityDetailsView-Header {
+    background: none !important;
+    color: black !important;
+    text-shadow: none !important;
+  }
+
+  .EntityDetailsView-Title {
+    color: black !important;
+    text-shadow: none !important;
+  }
+
+  .EntityDetailsView-Content {
+    background: none !important;
+    padding: 1rem !important;
+  }
+
+  .EntityDetailsView-DetailItem {
+    box-shadow: none !important;
+    background-color: transparent !important;
+    transform: none !important;
+    border: none !important;
+    page-break-inside: avoid; 
+  }
+
+  .EntityDetailsView-Actions {
+    display: none !important;
+  }
+}

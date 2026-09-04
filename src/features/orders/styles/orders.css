@@ -1,0 +1,19 @@
+@media print {
+  .print-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    background: white !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .print-container,
+  .print-container * {
+    visibility: visible !important;
+  }
+
+  .print-container .per-page-selector {
+    display: none !important;
+  }
+}

@@ -1,0 +1,149 @@
+/* globals.css */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Zain:ital,wght@0,200;0,300;0,400;0,700;0,800;0,900;1,300;1,400&display=swap');
+
+* {
+  font-family: "Cairo", sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  direction: rtl;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: relative;
+}
+
+.main-content {
+  display: flex;
+  flex: 1; /* Takes up remaining space */
+  width: 100%;
+  /* overflow: hidden; */
+}
+
+.content {
+  flex: 1;
+  /* padding: 0 20px 20px 20px; */
+  /* overflow-y: auto; */
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track, #e0e0e0);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, #888);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover, #555);
+}
+
+/* Utility */
+.w-100 {
+  width: 100% !important;
+}
+
+/* MUI */
+div[style="position: absolute; pointer-events: none; color: rgba(130, 130, 130, 0.62); z-index: 100000; width: 100%; text-align: center; bottom: 50%; right: 0px; letter-spacing: 5px; font-size: 24px;"] {
+  display: none !important;
+}
+
+@media print {
+  /* Hide everything first */
+  body * {
+    visibility: hidden !important;
+    overflow: visible !important;
+  }
+
+  .no-print {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .MuiDataGrid-root,
+  .MuiDataGrid-root * {
+    visibility: visible !important;
+  }
+
+  /* Ensure DataGrid takes up full width */
+  .MuiDataGrid-root {
+    /* position: absolute !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+    box-shadow: none !important; */
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin-top: 0 !important;
+  }
+  
+  .MuiDataGrid-columnHeaderTitle {
+    font-weight: 300 !important;
+    font-size: 12px !important;
+  }
+
+  /* Hide toolbar */
+  .MuiDataGrid-toolbarContainer {
+    display: none !important;
+  }
+  
+  /* Hide footer */
+  .MuiDataGrid-footerContainer {
+    display: none !important;
+  }
+
+  /* Hide checkbox selection */
+  .MuiDataGrid-columnHeaderCheckbox,
+  .MuiDataGrid-cellCheckbox {
+    display: none !important;
+  }
+
+  /* Hide table actions */
+  .MuiDataGrid-actionsCell {
+    display: none !important;
+  }
+
+  tr, td, th {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Hide scrollbars */
+  ::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  @page {
+    size: A4;
+    /* margin: 1cm; */
+    margin: 0;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  html, body {
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+}
