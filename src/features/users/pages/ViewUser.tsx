@@ -72,8 +72,13 @@ export function ViewUser() {
       if (!userId) {
         throw new Error("User ID is required");
       }
-      return fetchById(userId, axiosPrivate, ApiUrls.fetchUserById);
+      return fetchById<FetchUserResponse>(
+        userId,
+        axiosPrivate,
+        ApiUrls.fetchUserById
+      );
     },
+    select: (data) => data.Result,
     enabled: !!userId,
   });
 

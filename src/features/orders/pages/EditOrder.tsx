@@ -99,6 +99,7 @@ export function EditOrder() {
         ApiUrls.fetchOrderById
       );
     },
+    select: (data) => data.Result,
     enabled: !!orderId,
   });
   const serviceTypesOptions = useMemo(

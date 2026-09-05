@@ -21,11 +21,14 @@ export function useProtectedMutation<TData, TVariables>(
       }
       return fn(vars);
     },
-    onError: (err, vars, ctx) => {
+    onError: (err, vars) => {
       if (err.message === unauthorizedMsg) {
         showToast("ليس لديك صلاحية لهذا الإجراء", { type: "warning" });
       }
-      options?.onError?.(err, vars, ctx);
+      (options?.onError as ((error: Error, variables: TVariables) => void) | undefined)?.(
+        err,
+        vars
+      );
     },
     ...options,
   });

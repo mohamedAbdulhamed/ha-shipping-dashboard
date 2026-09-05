@@ -188,6 +188,7 @@ export function ViewOrder() {
         ApiUrls.fetchOrderById
       );
     },
+    select: (data) => data.Result,
     enabled: !!orderId,
   });
 

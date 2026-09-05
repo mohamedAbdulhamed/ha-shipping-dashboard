@@ -90,6 +90,7 @@ export function EditUser() {
         ApiUrls.fetchUserById
       );
     },
+    select: (data) => data.Result,
     enabled: !!userId,
   });
   const branchOptions = useMemo(
