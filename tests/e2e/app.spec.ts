@@ -14,6 +14,7 @@ type MockApiState = {
   profitReportRequests: string[];
   createOrderRequests: Record<string, unknown>[];
   collectionRequests: Record<string, unknown>[];
+  updateOrderRequests: Record<string, unknown>[];
   orderRows: Record<string, unknown>[];
 };
 
@@ -58,6 +59,7 @@ async function installApiMocks(page: Page): Promise<MockApiState> {
     profitReportRequests: [],
     createOrderRequests: [],
     collectionRequests: [],
+    updateOrderRequests: [],
     orderRows: [],
   };
 
@@ -126,6 +128,27 @@ async function installApiMocks(page: Page): Promise<MockApiState> {
       await fulfill(route, [{ id: 1, name: "توصيل" }]);
       return;
     }
+    if (path === "/api/orders/getbyid/501") {
+      await fulfill(route, {
+        id: 501,
+        senderName: "راسل الاختبار",
+        senderGovernorate: "أسوان",
+        senderCity: "ادفو",
+        senderAddress: "عنوان الراسل",
+        receiverName: "مستلم قديم",
+        phoneNumber1: "01012345678",
+        phoneNumber2: "",
+        receiverGovernorate: "أسوان",
+        receiverCity: "ادفو",
+        receiverAddress: "عنوان المستلم",
+        description: "",
+        shippingCost: 15,
+        codAmount: 100,
+        quantity: 1,
+        serviceType: 1,
+      });
+      return;
+    }
     if (path === "/api/account/getcustomernames") {
       await fulfill(route, [{ id: "customer-1", name: "راسل الاختبار", phoneNumber: "01012345678" }]);
       return;
@@ -177,6 +200,11 @@ async function installApiMocks(page: Page): Promise<MockApiState> {
     if (path === "/api/orders/add" && method === "POST") {
       state.createOrderRequests.push(request.postDataJSON() as Record<string, unknown>);
       await fulfill(route, "created");
+      return;
+    }
+    if (path === "/api/orders/update/501" && method === "PUT") {
+      state.updateOrderRequests.push(request.postDataJSON() as Record<string, unknown>);
+      await fulfill(route, null);
       return;
     }
     if (path === "/api/orders/ordersfinancialclose" && method === "PUT") {
@@ -274,6 +302,24 @@ test("order creation rejects an invalid phone number and never sends the order",
 
   await expect(page.getByText("رقم الهاتف غير صالح")).toBeVisible();
   expect(state.createOrderRequests).toHaveLength(0);
+});
+
+test("editing an order submits the updated form values", async ({ page }) => {
+  const state = await login(page);
+  await page.evaluate(() => {
+    window.history.pushState({}, "", "/orders/501/edit");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  });
+
+  await page.getByRole("textbox", { name: "اسم المستلم" }).fill("مستلم جديد");
+  await page.getByRole("textbox", { name: "عنوان المستلم" }).fill("عنوان معدل");
+  await page.getByRole("combobox", { name: "حاله الشحنة" }).click();
+  await page.getByRole("option", { name: "توصيل" }).click();
+  await page.getByRole("button", { name: "تعديل" }).click();
+
+  await expect.poll(() => state.updateOrderRequests.length).toBe(1);
+  expect(state.updateOrderRequests[0].receiverName).toBe("مستلم جديد");
+  await expect(page).toHaveURL(/\/orders$/);
 });
 
 test("finance totals match collectable rows and submit only collectable IDs", async ({ page }) => {

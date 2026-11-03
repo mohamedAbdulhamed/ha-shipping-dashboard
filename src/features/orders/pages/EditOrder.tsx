@@ -43,10 +43,14 @@ const editOrderSchema: z.ZodType<UpdateOrderRequest> = z.object({
     .min(10, "علي الاقل 10 ارقام")
     .regex(PHONE_REGEX, "رقم الهاتف غير صالح"),
   phoneNumber2: z
-    .string()
-    .max(13, "رقم الهاتف الثاني يجب ألا يتجاوز 13 رقم")
-    .min(10, "علي الاقل 10 ارقام")
-    .regex(PHONE_REGEX, "رقم الهاتف غير صالح")
+    .union([
+      z
+        .string()
+        .max(13, "رقم الهاتف الثاني يجب ألا يتجاوز 13 رقم")
+        .min(10, "علي الاقل 10 ارقام")
+        .regex(PHONE_REGEX, "رقم الهاتف غير صالح"),
+      z.literal(""),
+    ])
     .optional(),
   receiverGovernorate: z.string().min(1, "محافظة المستلم مطلوبة"),
   receiverCity: z.string().min(1, "مدينة المستلم مطلوبة"),
@@ -65,12 +69,6 @@ const editOrderSchema: z.ZodType<UpdateOrderRequest> = z.object({
     })
     .int("يجب أن يكون رقم صحيح")
     .min(1, "نوع الخدمة مطلوب"),
-  branchId: z.coerce
-    .number({
-      invalid_type_error: "يجب اختيار الفرع",
-    })
-    .int("يجب أن يكون رقم صحيح")
-    .min(1, "الفرع مطلوب"),
 });
 
 export function EditOrder() {
@@ -93,13 +91,12 @@ export function EditOrder() {
         throw new Error("Order ID is required");
       }
 
-      return fetchById<FetchOrderResponse>(
+      return fetchById<FetchOrderResponse["Result"]>(
         orderId,
         axiosPrivate,
         ApiUrls.fetchOrderById
       );
     },
-    select: (data) => data.Result,
     enabled: !!orderId,
   });
   const serviceTypesOptions = useMemo(
