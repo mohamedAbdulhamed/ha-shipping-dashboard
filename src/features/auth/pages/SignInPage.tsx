@@ -195,7 +195,7 @@ export function SignInComponent() {
         >
           <Box
             component="img"
-            src="/logo.svg"
+            src="/wesal-logo.png"
             alt="H&A"
             sx={{
               width: 100,

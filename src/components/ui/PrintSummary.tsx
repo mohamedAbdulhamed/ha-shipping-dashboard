@@ -57,7 +57,7 @@ export const PrintSummary = ({ printSummaryDetails }: PrintSummaryProps) => {
       {/* Logo */}
       <Box
         component="img"
-        src="/logo.svg"
+        src="/wesal-logo.png"
         alt="H&A Logistics"
         sx={{
           width: { xs: 120, md: 150 },
