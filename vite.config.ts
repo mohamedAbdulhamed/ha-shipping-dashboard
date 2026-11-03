@@ -13,7 +13,8 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
-          mui: ['@mui/material', '@mui/icons-material', '@mui/x-data-grid-premium'],
+          mui: ['@mui/material', '@mui/icons-material'],
+          dataGrid: ['@mui/x-data-grid-premium'],
           utils: ['axios', 'dayjs', 'zod', 'zustand'],
         },
       },

@@ -30,6 +30,8 @@ export function useBranches() {
   return {
     branches: query.data?.data,
     isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
   };
 }
 
@@ -75,6 +77,8 @@ export function useCustomers() {
   return {
     customers: query.data?.data,
     isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
   };
 }
 
@@ -99,6 +103,8 @@ export function useServiceTypes() {
   return {
     serviceTypes: query.data?.data,
     isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
   };
 }
 

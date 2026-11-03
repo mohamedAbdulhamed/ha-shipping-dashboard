@@ -36,6 +36,7 @@ import {
   ToggleableFiltersMenu,
 } from "@/components/crud/FiltersMenu";
 import { StatItem } from "@/components/ui/StatItem";
+import { QueryErrorAlert } from "@/components/ui/QueryErrorAlert";
 import { PrintSummary } from "@/components/ui/PrintSummary";
 import { StyledDataGrid } from "@/components/grid/StyledDataGrid";
 
@@ -81,6 +82,8 @@ export function UserProfitReport() {
   const {
     items,
     isLoading,
+    isError,
+    refetch,
     totalRowCount,
     paginationModel,
     handlePaginationChange,
@@ -95,6 +98,8 @@ export function UserProfitReport() {
 
   const {
     data: customers,
+    isError: customersError,
+    refetch: refetchCustomers,
   }: UseQueryResult<PaginatedResult<FetchCustomersResponse>> = useQuery({
     queryKey: ["customers"],
     queryFn: () =>
@@ -337,6 +342,12 @@ export function UserProfitReport() {
         },
       })}
     >
+      {(isError || customersError) && (
+        <QueryErrorAlert
+          onRetry={() => Promise.all([refetch(), refetchCustomers()])}
+        />
+      )}
+
       {/* Header Section */}
       <Box
         sx={{

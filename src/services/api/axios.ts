@@ -1,15 +1,16 @@
 import axios from "axios";
 
-// Base URL for the API
-const BASE_URL = 'https://hassan-shipping.runasp.net/api';
-// const BASE_URL = 'http://shipping-for-test.runasp.net/api';
+// This is a public API URL, not a credential. Keep secrets out of VITE_* values.
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL?.trim() ||
+  "https://hassan-shipping.runasp.net/api";
 
 export default axios.create({
-    baseURL: BASE_URL
+  baseURL: API_BASE_URL,
 });
 
 export const axiosPrivate = axios.create({
-    baseURL: BASE_URL,
-    headers: { 'Content-Type': 'application/json' },
-    withCredentials: true,
+  baseURL: API_BASE_URL,
+  headers: { "Content-Type": "application/json" },
+  withCredentials: true,
 });

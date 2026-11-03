@@ -335,8 +335,8 @@ export function ViewOrder() {
 
     try {
       await deleteStatusMutation.mutateAsync(statusId); // mutation call
-    } catch (error) {
-      console.error("فشل الحذف:", error);
+    } catch {
+      console.error("فشل حذف الشحنة.");
     }
   };
 

@@ -61,6 +61,7 @@ import { FetchOrdersResponse } from "@/types/dtos/Order.dto";
 import { ROLES } from "@/types";
 import Order from "@/entities/Order";
 import { StyledDataGrid } from "@/components/grid/StyledDataGrid";
+import { QueryErrorAlert } from "@/components/ui/QueryErrorAlert";
 import { hasAnyRole, hasRole, toOptions } from "@/utils";
 import { useAuthStore } from "@/store";
 import Barcode from "react-barcode";
@@ -99,6 +100,7 @@ export function ListOrders() {
     items,
     isLoading,
     isFetching,
+    isError,
     refetch,
     totalRowCount,
     paginationModel,
@@ -641,6 +643,8 @@ export function ListOrders() {
       })}
     >
       {DeleteConfirmationDialog}
+
+      {isError && <QueryErrorAlert onRetry={refetch} />}
 
       {/* Header Section */}
       <Box

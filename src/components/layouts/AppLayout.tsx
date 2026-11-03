@@ -361,11 +361,11 @@ export default function AppLayout() {
           logout();
           navigate(ROUTES.LOGIN.url);
         } else {
-          console.error("Logout error", res.data.ErrorMessage);
+          console.error("Logout request was rejected.");
         }
       })
-      .catch((error) => {
-        console.error("Logout error", error);
+      .catch(() => {
+        console.error("Logout request failed.");
         showToast("فشل تسجيل الخروج", { type: "error" });
       })
       .finally(() => {

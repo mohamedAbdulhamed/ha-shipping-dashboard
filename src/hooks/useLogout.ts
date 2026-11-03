@@ -19,12 +19,9 @@ const useLogout = () => {
       } else {
         const errorMessage =
           response?.data?.ErrorMessage || "Couldn't log you out.";
-        console.error(errorMessage);
-        
         return { success: false, message: errorMessage };
       }
-    } catch (error) {
-      console.error(error);
+    } catch {
       return { success: false, message: "An error occurred during logout." };
     }
   };

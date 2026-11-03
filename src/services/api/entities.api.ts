@@ -59,20 +59,12 @@ export const fetchById = async <T>(
     throw new Error("ID is required");
   }
 
-  try {
-    const response = await axiosPrivate.get<ApiResponse>(
-      `${fetchUrl}${id}`,
-      axiosConfig
-    );
-    if (response.data) {
-      return response.data.Result;
-    } else {
-      throw new Error("Invalid response structure");
-    }
-  } catch (error) {
-    console.error("Error fetching by ID:", error);
-    throw new Error("Error fetching data by ID");
-  }
+  const response = await axiosPrivate.get<ApiResponse>(
+    `${fetchUrl}${id}`,
+    axiosConfig
+  );
+  if (!response.data) throw new Error("Invalid response structure");
+  return response.data.Result;
 };
 
 export const createEntity = async (
@@ -85,12 +77,7 @@ export const createEntity = async (
     throw new Error("Data is required");
   }
 
-  try {
-    await axiosPrivate.post<ApiResponse>(createUrl, data, axiosConfig);
-  } catch (error) {
-    console.error("Error creating entity:", error);
-    throw new Error("Error creating entity");
-  }
+  await axiosPrivate.post<ApiResponse>(createUrl, data, axiosConfig);
 };
 
 export const updateEntity = async <T>(
@@ -104,21 +91,13 @@ export const updateEntity = async <T>(
     throw new Error("ID is required");
   }
 
-  try {
-    const response = await axiosPrivate.put<ApiResponse>(
-      `${updateUrl}${id}`,
-      data,
-      axiosConfig
-    );
-    if (response.data) {
-      return response.data.Result;
-    } else {
-      throw new Error("Invalid response structure");
-    }
-  } catch (error) {
-    console.error("Error updating entity:", error);
-    throw new Error("Error updating entity");
-  }
+  const response = await axiosPrivate.put<ApiResponse>(
+    `${updateUrl}${id}`,
+    data,
+    axiosConfig
+  );
+  if (!response.data) throw new Error("Invalid response structure");
+  return response.data.Result;
 };
 
 export const deleteEntity = async (
@@ -130,19 +109,9 @@ export const deleteEntity = async (
     throw new Error("ID is required");
   }
 
-  try {
-    const response = await axiosPrivate.delete<ApiResponse>(
-      `${deleteUrl}${id}`
-    );
-    if (response.data) {
-      return response.data.Result;
-    } else {
-      throw new Error("Invalid response structure");
-    }
-  } catch (error) {
-    console.error("Error deleting entity:", error);
-    throw new Error("Error deleting entity");
-  }
+  const response = await axiosPrivate.delete<ApiResponse>(`${deleteUrl}${id}`);
+  if (!response.data) throw new Error("Invalid response structure");
+  return response.data.Result;
 };
 
 export const toggleEntityStatus = async (
@@ -155,19 +124,11 @@ export const toggleEntityStatus = async (
     throw new Error("ID is required");
   }
 
-  try {
-    const response = await axiosPrivate.patch<ApiResponse>(
-      `${toggleUrl}?userId=${id}`,
-      {},
-      axiosConfig
-    );
-    if (response.data) {
-      return response.data.Result;
-    } else {
-      throw new Error("Invalid response structure");
-    }
-  } catch (error) {
-    console.error("Error toggling entity status:", error);
-    throw new Error("Error toggling entity status");
-  }
+  const response = await axiosPrivate.patch<ApiResponse>(
+    `${toggleUrl}?userId=${id}`,
+    {},
+    axiosConfig
+  );
+  if (!response.data) throw new Error("Invalid response structure");
+  return response.data.Result;
 };

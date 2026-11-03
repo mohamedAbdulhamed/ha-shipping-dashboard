@@ -12,11 +12,6 @@ export default function App() {
 
   const cacheRtl = createRtlCache();
 
-  if (import.meta.env.PROD) {
-    console.clear();
-    console.error = () => {};
-  }
-
   return (
     <Suspense
       fallback={

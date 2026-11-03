@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Autocomplete,
@@ -66,6 +66,7 @@ import { FetchCustomersResponse } from "@/types/dtos/User.dto";
 import { ROUTES } from "@/app/routes/routesConfig";
 import { Option, toOptions } from "@/utils";
 import { PrintSummary } from "@/components/ui/PrintSummary";
+import { QueryErrorAlert } from "@/components/ui/QueryErrorAlert";
 
 const GRID_CONTAINER_HEIGHT = 1000;
 const GRID_CONTAINER_MIN_HEIGHT = 900;
@@ -76,7 +77,7 @@ const ROW_BUFFER_PIXELS = 1000;
 const COLUMN_BUFFER_PIXELS = 1000;
 
 interface CollectType {
-  selectedOrderIds: GridRowSelectionModel;
+  selectedOrderIds: Order["id"][];
 }
 
 export function FinancialSummary() {
@@ -97,6 +98,8 @@ export function FinancialSummary() {
   const {
     items,
     isLoading,
+    isError: ordersError,
+    refetch: refetchOrders,
     totalRowCount,
     paginationModel,
     handlePaginationChange,
@@ -112,6 +115,8 @@ export function FinancialSummary() {
 
   const {
     data: financialStatuses,
+    isError: financialStatusesError,
+    refetch: refetchFinancialStatuses,
   }: UseQueryResult<PaginatedResult<FetchFinancialStatusesResponse>> = useQuery(
     {
       queryKey: ["financialStatuses"],
@@ -124,6 +129,8 @@ export function FinancialSummary() {
   );
   const {
     data: customers,
+    isError: customersError,
+    refetch: refetchCustomers,
   }: UseQueryResult<PaginatedResult<FetchCustomersResponse>> = useQuery({
     queryKey: ["customers"],
     queryFn: () =>
@@ -167,12 +174,15 @@ export function FinancialSummary() {
       });
     },
     onSuccess: () => {
+      setRowSelectionModel([]);
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       showToast("تم تحصيل الاوردرات بنجاح", { type: "success" });
     },
     onError: () =>
-      showToast("حدث خطأ أثناء تحصيل الاوردرات", { type: "error" }),
-    onSettled: () => setRowSelectionModel([]),
+      showToast(
+        "تعذر تحصيل الشحنات. تم الاحتفاظ بالتحديد لتتمكن من المحاولة مرة أخرى.",
+        { type: "error" }
+      ),
   });
 
   const invoiceDetails = useMemo(() => {
@@ -180,7 +190,7 @@ export function FinancialSummary() {
       .filter((item) => rowSelectionModel.includes(item.id))
       .filter((order) => order.financialStatus === FinancialStatus.Collectable);
 
-    return selectedCollectableOrders.reduce(
+    const totals = selectedCollectableOrders.reduce(
       (acc, order) => ({
         totalCOD: acc.totalCOD + (order.codAmount || 0),
         totalShipping: acc.totalShipping + (order.shippingCost || 0),
@@ -189,7 +199,27 @@ export function FinancialSummary() {
       }),
       { totalCOD: 0, totalShipping: 0, totalReceived: 0, selectedCount: 0 }
     );
+    return {
+      ...totals,
+      selectedOrderIds: selectedCollectableOrders.map((order) => order.id),
+    };
   }, [items, rowSelectionModel]);
+
+  const handleGridPaginationChange = useCallback(
+    (model: typeof paginationModel) => {
+      setRowSelectionModel([]);
+      handlePaginationChange(model);
+    },
+    [handlePaginationChange]
+  );
+
+  const handleGridFilterChange = useCallback(
+    (model: Parameters<typeof handleFilterChange>[0]) => {
+      setRowSelectionModel([]);
+      handleFilterChange(model);
+    },
+    [handleFilterChange]
+  );
 
   const printSummaryDetails = useMemo(() => {
     const selectedOrders = items.filter((item) =>
@@ -536,6 +566,18 @@ export function FinancialSummary() {
         },
       })}
     >
+      {(ordersError || financialStatusesError || customersError) && (
+        <QueryErrorAlert
+          onRetry={() =>
+            Promise.all([
+              refetchOrders(),
+              refetchFinancialStatuses(),
+              refetchCustomers(),
+            ])
+          }
+        />
+      )}
+
       {/* Header Section */}
       <Box
         sx={{
@@ -574,7 +616,7 @@ export function FinancialSummary() {
           loading={collectMutation.isPending}
           onCollect={() =>
             collectMutation.mutate({
-              selectedOrderIds: rowSelectionModel,
+              selectedOrderIds: invoiceDetails.selectedOrderIds,
             })
           }
           rowCount={invoiceDetails.selectedCount}
@@ -702,7 +744,7 @@ export function FinancialSummary() {
             ),
           },
         ]}
-        onFiltersChange={handleFilterChange}
+        onFiltersChange={handleGridFilterChange}
       />
 
       <Box className="print-table-container">
@@ -800,7 +842,7 @@ export function FinancialSummary() {
           paginationMode="server"
           sortingMode="server"
           filterMode="server"
-          onPaginationModelChange={handlePaginationChange}
+          onPaginationModelChange={handleGridPaginationChange}
           editMode="row"
           loading={isLoading}
           localeText={DataGridArLocaleText}

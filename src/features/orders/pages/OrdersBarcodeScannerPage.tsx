@@ -2,8 +2,11 @@ import { motion } from "framer-motion";
 import QrCodeScannerRounded from "@mui/icons-material/QrCodeScannerRounded";
 import { MultiLineChipInput } from "@/components/ui/MultiLineChipInput";
 import { ROUTES } from "@/app/routes/routesConfig";
+import { useNavigate } from "react-router-dom";
 
 export function OrdersBarcodeScannerPage() {
+  const navigate = useNavigate();
+
   return (
     <MultiLineChipInput<string>
       title="مسح بوليصات الشحن"
@@ -19,12 +22,8 @@ export function OrdersBarcodeScannerPage() {
       onSubmit={(codes) => {
         const params = new URLSearchParams();
         codes.forEach((c) => params.append("billOfLading", c));
-        return new Promise((res) =>
-          setTimeout(() => {
-            window.location.href = `${ROUTES.ORDERS.BASE.url}?${params.toString()}`;
-            res(undefined);
-          }, 400)
-        );
+        navigate(`${ROUTES.ORDERS.BASE.url}?${params.toString()}`);
+        return Promise.resolve();
       }}
       buttonLabel={(count, loading) =>
         loading ? (

@@ -5,22 +5,25 @@ import useRefreshToken from "@/hooks/useRefreshToken";
 import { PageLoader } from "../ui/PageLoader";
 import { retryWithBackoff } from "@/utils/index";
 import { useAuthStore } from "@/store";
-import { Button } from "@mui/material";
+import { Alert, Button } from "@mui/material";
 
 const OfflineMessage = memo(() => (
-  <div>
+  <Alert severity="warning" role="status" sx={{ m: 2 }}>
     <p>تعذر الاتصال بالإنترنت. الرجاء التحقق من الاتصال.</p>
     <p>سنعيد المحاولة تلقائيًا عند استعادة الاتصال.</p>
-  </div>
+  </Alert>
 ));
 
 const TryPersist: React.FC= () => {
-  const [persist] = useLocalStorageState<boolean>("persist", false);
+  const [persist, setPersist] = useLocalStorageState<boolean>("persist", false);
   const refresh = useRefreshToken();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
   const [isLoading, setIsLoading] = useState(true);
-  const [isOffline, setIsOffline] = useState(false);
+  const [isOffline, setIsOffline] = useState(
+    () => typeof navigator !== "undefined" && !navigator.onLine
+  );
   const controllerRef = useRef<AbortController | null>(null);
 
   // Network status handling with stable callbacks
@@ -65,14 +68,16 @@ const TryPersist: React.FC= () => {
         return;
       }
 
+      setIsLoading(true);
       try {
         await retryWithBackoff(
           () => refresh(controllerRef.current!.signal),
           3,
           1000
         );
-      } catch (error) {
-        console.error("Token refresh failed:", error);
+      } catch {
+        logout();
+        setPersist(false);
         navigate("/login", { replace: true });
       } finally {
         if (isMounted) setIsLoading(false);
@@ -85,7 +90,7 @@ const TryPersist: React.FC= () => {
       isMounted = false;
       controllerRef.current?.abort();
     };
-  }, [persist, refresh, navigate, isOffline, user]);
+  }, [persist, setPersist, refresh, navigate, isOffline, user, logout]);
 
   const cancelAction = (): ReactNode => (
     <Button

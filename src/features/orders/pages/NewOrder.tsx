@@ -5,6 +5,7 @@ import { ROLES } from "@/types";
 import { createEntity } from "@/services/api/entities.api";
 import { useMutation, useQuery, UseQueryResult } from "@tanstack/react-query";
 import { PageLoader } from "@/components/ui/PageLoader";
+import { QueryErrorAlert } from "@/components/ui/QueryErrorAlert";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import { ApiUrls, PHONE_REGEX } from "@/common/constants";
 import { CreateOrderRequest } from "@/types/dtos/Order.dto";
@@ -124,7 +125,6 @@ const createOrderSchema: z.ZodType<CreateOrderRequest> = z
         invalid_type_error: "يجب اختيار فرع صحيح",
       })
       .int("يجب اختيار فرع صحيح"),
-    shipWithJT: z.boolean().optional(),
   })
   .strict();
 
@@ -134,9 +134,24 @@ export function NewOrder() {
   const axiosPrivate = useAxiosPrivate();
   const { showToast } = useToast();
   const { user } = useAuthStore();
-  const { branches, isLoading: loadingBranches } = useBranches();
-  const { customers, isLoading: loadingCustomers } = useCustomers();
-  const { serviceTypes, isLoading: loadingServiceTypes } = useServiceTypes();
+  const {
+    branches,
+    isLoading: loadingBranches,
+    isError: branchesError,
+    refetch: refetchBranches,
+  } = useBranches();
+  const {
+    customers,
+    isLoading: loadingCustomers,
+    isError: customersError,
+    refetch: refetchCustomers,
+  } = useCustomers();
+  const {
+    serviceTypes,
+    isLoading: loadingServiceTypes,
+    isError: serviceTypesError,
+    refetch: refetchServiceTypes,
+  } = useServiceTypes();
 
   const isSender = hasRole(user, ROLES.SENDER);
   const [selectedCustomer, setSelectedCustomer] =
@@ -151,6 +166,8 @@ export function NewOrder() {
   const {
     data: customerDetails,
     isLoading: isLoadingCustomerDetails,
+    isError: customerDetailsError,
+    refetch: refetchCustomerDetails,
   }: UseQueryResult<FetchUserResponse["Result"]> = useQuery({
     queryKey: ["customerDetails", selectedCustomer?.value],
     queryFn: () =>
@@ -228,9 +245,6 @@ export function NewOrder() {
     onSuccess: () => {
       showToast("تم انشاء الطلب بنجاح", { type: "success" });
     },
-    onError: () => {
-      showToast("حدث خطأ أثناء إنشاء الطلب", { type: "error" });
-    },
   });
 
   const handleSelectLocation = useCallback(
@@ -242,50 +256,6 @@ export function NewOrder() {
     },
     [setReceiverAddress]
   );
-
-  const JTExpressButton = () => {
-
-    return (
-      <Button
-        type="button"
-        variant="contained"
-        disabled={true}
-        sx={{
-          color: "#302900",
-          backgroundColor: "#ff00004d",
-          opacity: "0.6", // disabled
-          fontSize: 18,
-          fontWeight: "bold",
-          px: 4,
-          py: 1.5,
-          borderRadius: 2,
-          minWidth: 160,
-          transition: "all 0.3s ease",
-          "&:hover": {
-            color: "#fff",
-            backgroundColor: "#843500",
-            boxShadow: "0 4px 12px rgba(255, 0, 0, 0.3)",
-            transform: "translateY(-2px)",
-          },
-          "&:disabled": {
-            background: "linear-gradient(45deg, #B0BEC5 30%, #CFD8DC 90%)",
-            color: "text.disabled",
-          },
-        }}
-        endIcon={
-          <img
-            src="/J&T_Express_logo.svg"
-            alt="J&T Express"
-            style={{
-              height: 24,
-            }}
-          />
-        }
-      >
-        {"اضافة و شحن مع"}
-      </Button>
-    );
-  };
 
   const fields: FieldConfig<CreateOrderRequest>[] = [
     // Sender Details
@@ -739,17 +709,17 @@ export function NewOrder() {
         gridColumn: "1 / 3",
       },
     },
-    {
-      name: "shipWithJT",
-      label: "شحن مع J&T",
-      type: "checkbox",
-      customRender: () => undefined,
-    },
   ];
 
   const onSubmitHandler = async (data: CreateOrderRequest) => {
     if (!isSender && selectedCustomer === null) {
       showToast("يرجى اختيار اسم الراسل", { type: "error" });
+      return;
+    }
+    if (customerDetailsError) {
+      showToast("تعذر تحميل بيانات الراسل. أعد المحاولة قبل إنشاء الطلب.", {
+        type: "error",
+      });
       return;
     }
     if (!customerDetails) {
@@ -763,6 +733,8 @@ export function NewOrder() {
       data.senderGovernorate = customerDetails.governorate;
       data.senderCity = customerDetails.city;
       data.senderAddress = customerDetails.address;
+      // Keep the existing API contract while the J&T integration is deferred.
+      data.shipWithJT = false;
 
       await createMutation.mutateAsync(data);
     } catch (error: any) {
@@ -773,8 +745,29 @@ export function NewOrder() {
   if (loadingBranches || loadingServiceTypes || loadingCustomers)
     return <PageLoader text="يتم تحميل البيانات" />;
 
+  if (branchesError || serviceTypesError || customersError) {
+    return (
+      <QueryErrorAlert
+        message="تعذر تحميل الفروع أو العملاء أو أنواع الخدمة. أعد المحاولة للمتابعة."
+        onRetry={() =>
+          Promise.all([
+            refetchBranches(),
+            refetchCustomers(),
+            refetchServiceTypes(),
+          ])
+        }
+      />
+    );
+  }
+
   return (
     <Box>
+      {customerDetailsError && (
+        <QueryErrorAlert
+          message="تعذر تحميل بيانات الراسل. أعد المحاولة قبل إنشاء الطلب."
+          onRetry={refetchCustomerDetails}
+        />
+      )}
       <MapLocationPicker
         open={openMapDialog}
         onClose={() => setOpenMapDialog(false)}
@@ -801,7 +794,6 @@ export function NewOrder() {
           serviceType: serviceTypesOptions[0]?.value ?? "",
           branchId: branchOptions[0]?.value ?? "",
           description: "",
-          shipWithJT: false,
         }}
         resetAfterSubmit={true}
         keepAfterReset={["senderName"]}
@@ -833,7 +825,6 @@ export function NewOrder() {
           title: "شحنه جديده",
           createButtonText: "اضافة",
         }}
-        customButtons={<JTExpressButton />}
       />
     </Box>
   );

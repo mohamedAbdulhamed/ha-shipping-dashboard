@@ -69,6 +69,7 @@ export function useGrid<T, Extra = Record<string, any>>(
     items: data,
     isLoading: queryMeta.isLoading,
     isFetching: queryMeta.isFetching,
+    isError: queryMeta.isError,
     error: queryMeta.error,
     refetch: queryMeta.refetch,
     totalRowCount,
